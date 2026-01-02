@@ -21,6 +21,15 @@ class ExpenseController extends Controller
     {
         $user = Auth::user();
         $categories = $user->expenseCategories;
+
+        if ($categories->isEmpty()) {
+            $defaults = ['Food', 'Transport', 'Utilities', 'Rent', 'Entertainment', 'Others'];
+            foreach ($defaults as $name) {
+                ExpenseCategory::create(['user_id' => $user->id, 'name' => $name]);
+            }
+            $categories = $user->expenseCategories()->get();
+        }
+
         return view('expenses.create', compact('categories'));
     }
 
@@ -37,5 +46,15 @@ class ExpenseController extends Controller
         ]);
 
         return redirect()->route('dashboard');
+    }
+
+    public function destroy(Expense $expense)
+    {
+        if ($expense->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $expense->delete();
+        return redirect()->back()->with('success', 'Transaction removed.');
     }
 }

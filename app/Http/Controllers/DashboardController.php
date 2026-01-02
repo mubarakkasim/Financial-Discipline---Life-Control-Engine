@@ -13,6 +13,11 @@ class DashboardController extends Controller
     public function index(FinancialEngine $engine)
     {
         $user = Auth::user();
+        
+        if ($user->financialGoals()->count() === 0) {
+            return redirect()->route('onboarding');
+        }
+
         $goal = $user->financialGoals()->first();
         
         $healthScore = $engine->calculateHealthScore($user);

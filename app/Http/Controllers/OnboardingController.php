@@ -36,13 +36,15 @@ class OnboardingController extends Controller
             'frequency' => $request->income_frequency,
         ]);
 
-        // 3. Create Default Spending Categories
-        $categories = ['Food', 'Transport', 'Utilities', 'Rent', 'Entertainment', 'Others'];
-        foreach ($categories as $cat) {
-            ExpenseCategory::create([
-                'user_id' => $user->id,
-                'name' => $cat
-            ]);
+        // 3. Create Default Spending Categories if none exist
+        if ($user->expenseCategories()->count() === 0) {
+            $categories = ['Food', 'Transport', 'Utilities', 'Rent', 'Entertainment', 'Others'];
+            foreach ($categories as $cat) {
+                ExpenseCategory::create([
+                    'user_id' => $user->id,
+                    'name' => $cat
+                ]);
+            }
         }
 
         return redirect()->route('dashboard');

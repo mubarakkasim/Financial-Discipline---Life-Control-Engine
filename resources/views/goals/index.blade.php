@@ -27,14 +27,32 @@
     </div>
 
     <div class="card">
-        <h4 style="margin-bottom: 20px;">Add to Savings</h4>
+        <h4 style="margin-bottom: 20px;">Manage Goal</h4>
         <form action="{{ route('goals.update', $goal->id) }}" method="POST">
             @csrf
             @method('PUT')
+            
             <div class="form-group">
-                <input type="number" name="deposit" placeholder="Amount to save (₦)" required>
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Quick Savings (₦)</label>
+                <input type="number" name="deposit" placeholder="Add to current savings...">
             </div>
-            <button type="submit" class="btn btn-primary">Deposit to Vault</button>
+
+            <div style="margin-top: 20px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Update Goal Parameters</p>
+                <div class="form-group">
+                    <input type="text" name="title" value="{{ $goal->title }}" placeholder="Goal Title">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <input type="number" name="target_amount" value="{{ $goal->target_amount }}" placeholder="Target (₦)">
+                    </div>
+                    <div class="form-group">
+                        <input type="date" name="target_date" value="{{ \Carbon\Carbon::parse($goal->target_date)->format('Y-m-d') }}">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save All Changes</button>
         </form>
     </div>
     @else

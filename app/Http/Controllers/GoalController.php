@@ -20,11 +20,20 @@ class GoalController extends Controller
     {
         $goal = FinancialGoal::findOrFail($id);
         
-        if ($request->has('deposit')) {
-            $goal->current_savings += $request->deposit;
-            $goal->save();
+        if ($goal->user_id !== Auth::id()) {
+            abort(403);
         }
 
-        return redirect()->back()->with('success', 'Savings updated!');
+        if ($request->has('deposit') && $request->deposit > 0) {
+            $goal->current_savings += $request->deposit;
+        }
+
+        if ($request->has('title')) $goal->title = $request->title;
+        if ($request->has('target_amount')) $goal->target_amount = $request->target_amount;
+        if ($request->has('target_date')) $goal->target_date = $request->target_date;
+
+        $goal->save();
+
+        return redirect()->back()->with('success', 'Goal updated successfully!');
     }
 }

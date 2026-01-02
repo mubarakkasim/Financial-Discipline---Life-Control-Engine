@@ -1,27 +1,26 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+@extends('layout.app')
+
+@section('content')
+<div class="animate-fade">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="font-weight: 800; font-size: 2rem;">Secure<br><span style="color: var(--primary);">Area.</span></h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px;">Please confirm your password to proceed.</p>
     </div>
 
     <form method="POST" action="{{ route('password.confirm') }}">
         @csrf
-
-        <!-- Password -->
-        <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        
+        <div class="card">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" required autocomplete="current-password" autofocus>
+                @error('password')
+                    <p style="color: var(--danger); font-size: 0.75rem; margin-top: 5px;">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="btn btn-primary">Confirm</button>
     </form>
-</x-guest-layout>
+</div>
+@endsection

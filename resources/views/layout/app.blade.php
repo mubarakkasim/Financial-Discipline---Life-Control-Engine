@@ -30,9 +30,9 @@
             <i class="fas fa-bullseye"></i>
             <span>Goal</span>
         </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-user-gear"></i>
-            <span>Rules</span>
+        <a href="{{ route('profile.edit') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <i class="fas fa-shield-halved"></i>
+            <span>Vault</span>
         </a>
     </nav>
 
