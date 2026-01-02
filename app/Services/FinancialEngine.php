@@ -18,14 +18,15 @@ class FinancialEngine
         // 1. Savings Consistency (30 points)
         $goal = $user->financialGoals()->first();
         if ($goal) {
-            $progress = ($goal->current_savings / $goal->target_amount) * 100;
+            $progress = ($goal->target_amount > 0) ? ($goal->current_savings / $goal->target_amount) * 100 : 0;
             $score += min(30, ($progress / 100) * 30);
         }
 
         // 2. Spending Discipline (40 points)
-        $monthlyIncome = $user->incomeSources()->sum('amount');
+        $monthlyIncome = $user->incomeSources->sum('amount');
         $monthlyExpenses = $user->expenses()
             ->where('spent_at', '>=', Carbon::now()->startOfMonth())
+            ->get()
             ->sum('amount');
             
         if ($monthlyIncome > 0) {
@@ -36,8 +37,7 @@ class FinancialEngine
         }
 
         // 3. Goal Adherence (30 points)
-        // Check if last 3 months expenses were below income
-        $score += 20; // Default buffer for simplicity in MVP
+        $score += 20; 
 
         return round($score);
     }
@@ -46,24 +46,29 @@ class FinancialEngine
     {
         $insights = [];
         $goal = $user->financialGoals()->first();
-        $monthlyIncome = $user->incomeSources()->sum('amount');
-        $monthlyExpenses = $user->expenses()
+        
+        $incomeRecords = $user->incomeSources;
+        $monthlyIncome = $incomeRecords->sum('amount');
+        
+        $expenseRecords = $user->expenses()
             ->where('spent_at', '>=', Carbon::now()->startOfMonth())
-            ->sum('amount');
+            ->with('category')
+            ->get();
+            
+        $monthlyExpenses = $expenseRecords->sum('amount');
 
         // Detect spending leaks
-        $topCategories = $user->expenses()
-            ->selectRaw('expense_category_id, sum(amount) as total')
-            ->groupBy('expense_category_id')
-            ->orderByDesc('total')
-            ->take(3)
-            ->get();
+        $categoryTotals = $expenseRecords->groupBy('expense_category_id')
+            ->map(fn($group) => $group->sum('amount'))
+            ->sortDesc()
+            ->take(3);
 
-        foreach ($topCategories as $cat) {
-            if ($monthlyIncome > 0 && ($cat->total / $monthlyIncome) > 0.2) {
+        foreach ($categoryTotals as $catId => $total) {
+            $categoryName = $expenseRecords->firstWhere('expense_category_id', $catId)->category->name;
+            if ($monthlyIncome > 0 && ($total / $monthlyIncome) > 0.2) {
                 $insights[] = [
                     'type' => 'warning',
-                    'content' => "High spending in {$cat->category->name}. Consider reducing it by 10%.",
+                    'content' => "High spending in {$categoryName}. Consider reducing it by 10%.",
                     'importance' => 4
                 ];
             }

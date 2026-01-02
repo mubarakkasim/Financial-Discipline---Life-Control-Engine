@@ -25,7 +25,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
+
+    public function securityLogs() { return $this->hasMany(SecurityLog::class); }
 
     /**
      * The attributes that should be hidden for serialization.
